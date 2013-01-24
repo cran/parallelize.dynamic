@@ -530,7 +530,6 @@ clapply_cluster = function(l, .f, ..., clCfg = NULL) {
 		if (h$type == "PSOCK") rep(h$host, h$count) else NULL}));
 	master = ifelse(all(hosts == "localhost"), "localhost", ipAddress("eth0"));
 	establishEnvironment = T;
-print(clCfg);
 	cl = if (clCfg$reuseCluster) {
 		if (!exists(".globalClusterObject")) {
 			assign(".globalClusterObject", makeCluster(hosts, type = "PSOCK", master = master),
@@ -539,7 +538,6 @@ print(clCfg);
 		get('.globalClusterObject', envir = Snow_cluster_env__)
 	} else makeCluster(hosts, type = "PSOCK", master = master);
 	#clusterSetupRNG(cl);	# snow
-print(clCfg);
 	clusterSetRNGStream(cl, iseed = NULL);	# parallel
 
 	clusterExport(cl, clCfg$vars);
@@ -659,7 +657,7 @@ frozenCallResults = function(file) {
 freezeCallEncapsulated = function(call_,
 	freeze_control = FreezeThawControlDefaults,
 	freeze_tag = 'frozenFunction', freeze_file = sprintf('%s/%s.RData', freeze_control$dir, freeze_tag),
-	freeze_save_output = F)
+	freeze_save_output = F, freeze_objects = NULL)
 	with(merge.lists(FreezeThawControlDefaults, freeze_control), {
 
 	sp = splitPath(freeze_file, ssh = freeze_ssh);
@@ -686,7 +684,7 @@ freezeCallEncapsulated = function(call_,
 	#Save(c('callWrapper', 'callSpecification', 'thawCall', objects),
 	#	file = freeze_file, symbolsAsVectors = T);
 	#Save(c(c('callWrapper', 'callSpecification', 'thawCall'), objects),
-	Save(c('callWrapper', 'callSpecification', 'thawCall'),
+	Save(c('callWrapper', 'callSpecification', 'thawCall', freeze_objects),
 		file = freeze_file, symbolsAsVectors = T);
 	freeze_file
 })
@@ -723,7 +721,7 @@ callWithFunctionArgs = function(f, args, envir__ = parent.frame(), name = NULL) 
 freezeCall = function(freeze_f, ...,
 	freeze_control = FreezeThawControlDefaults,
 	freeze_tag = 'frozenFunction', freeze_file = sprintf('%s/%s.RData', freeze_control$dir, freeze_tag),
-	freeze_save_output = F, freeze_envir = parent.frame()) {
+	freeze_save_output = F, freeze_envir = parent.frame(), freeze_objects = NULL) {
 
 	# args = eval(list(...), envir = freeze_envir)
 	call_ = callWithFunctionArgs(f = freeze_f, args = list(...),
@@ -731,7 +729,7 @@ freezeCall = function(freeze_f, ...,
 
 	freezeCallEncapsulated(call_,
 		freeze_control = freeze_control, freeze_tag = freeze_tag,
-		freeze_file = freeze_file, freeze_save_output = freeze_save_output);
+		freeze_file = freeze_file, freeze_save_output = freeze_save_output, freeze_objects = freeze_objects);
 }
 
 
@@ -823,6 +821,7 @@ writeFile = function(path, str, mkpath = F, ssh = F) {
 			cat(str, file = out, sep = "");
 		close(con = out);
 	}
+	path
 }
 
 # <!> local = T does not work
@@ -836,6 +835,7 @@ Source = function(file, ...,
 # NA: specify 'NA'-values
 optionParser = list(
 	SEP = function(e)list(T = "\t", S = ' ', C = ',', `;` = ';', `S+` = '')[[e]],
+	QUOTE = function(e)(if (e == 'F') '' else e),
 	HEADER = function(e)list(T = T, F = F)[[e]],
 	NAMES = function(e)splitString(';', e),
 	PROJECT = function(e)splitString(';', e),
@@ -870,11 +870,11 @@ splitExtendedPath = function(path) {
 	r = list(path = path, options = options)
 }
 
-readTable.csv.defaults = list(HEADER = T, SEP = "\t", `NA` = c('NA'));
+readTable.csv.defaults = list(HEADER = T, SEP = "\t", `NA` = c('NA'), QUOTE = '"');
 readTable.csv = function(path, options = readTable.csv.defaults, headerMap = NULL, setHeader = NULL, ...) {
 	options = merge.lists(readTable.csv.defaults, options);
 	t = read.table(path, header = options$HEADER, sep = options$SEP, as.is = T,
-		na.strings = options$`NA`, comment.char = '', ...);
+		na.strings = options$`NA`, comment.char = '', quote = options$QUOTE, ...);
 	if (!is.null(options$NAMES)) names(t)[1:length(options$NAMES)] = options$NAMES;
 	if (!is.null(headerMap)) names(t) = vector.replace(names(t), headerMap);
 	if (!is.null(setHeader)) names(t) =  c(setHeader, names(t)[(length(setHeader)+1): length(names(t))]);

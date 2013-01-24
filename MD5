@@ -1,11 +1,11 @@
-0fc195702bb346d4464a3b83434cd0e9 *DESCRIPTION
+13fe8db2a5bf1802749dd2f8add20993 *DESCRIPTION
 5094d4c9c81e8ff1873117f08cee6314 *NAMESPACE
-d4605938d14469f10bbed6fa8811bba2 *R/Rdata.R
+f4767567555f9bc436151b2d77ffc45d *R/Rdata.R
 36a35f3718f9648d87b080df8367d392 *R/Rfunctions.R
-27ecbab675fe2461f703b89704ab26ca *R/Rparallel.R
-d233a101859638ece2e6c46901751d9d *R/Rparallel.back.R
+0126e16c5a9712e359b7c994405f1f40 *R/Rparallel.R
+6219bff67f515c5316b92f156c038449 *R/Rparallel.back.R
 4cb0741cd3a97f8fc896c1566fe5d72b *R/Rparallel_setEnable_pkg.R
-1b829437a289d17205e636d4d6e7e3d4 *R/Rsystem.R
+10820a141d3370ef21e12536da37e0c5 *R/Rsystem.R
 d2e470b5b0e5432a4c1f94ff66e6e1b5 *R/parallelize.dynamic.R
 f17acfd4ee58525d169bce9151d3279d *inst/Perl/Set.pm
 dc12e7a0a1c31ac7d2053772ffccd3e1 *inst/Perl/TempFileNames.pm

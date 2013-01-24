@@ -126,6 +126,7 @@ parallelizationStateObjects = c(
 saveParallelizationStatePath = function(self, path = NULL) {
 	if (is.null(path)) path = parallelizationStatePath(self, 'state');
 	Log(sprintf('Saving state to %s', path), 5);
+	parallelizationStateObjects = names(as.list(parallelize_env));
 	Save(parallelizationStateObjects, file = path, symbolsAsVectors = T, envir = parallelize_env);
 }
 restoreParallelizationStatePath = function(self, path = NULL) {
@@ -303,7 +304,7 @@ setMethod('initScheduling', 'ParallelizeBackendOGS', function(self, call_) {
 
 	path = freezeCall(freeze_f = ..f, ...,
 		freeze_file = freeze_file, freeze_save_output = T, freeze_control = freeze_control,
-		freeze_envir = NULL);
+		freeze_envir = NULL, freeze_objects = 'parallelize_env');
 	wrap = frozenCallWrap(path, freeze_control);
 	qsubOptions = sprintf('%s --outputDir %s %s',
 		self@config$qsubOptions,

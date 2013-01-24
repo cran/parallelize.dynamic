@@ -326,7 +326,7 @@ LapplyExecutionStateClass$accessors(names(LapplyExecutionStateClass$fields()));
 #	<p> core parallize functions
 #
 
-parallelize_env <- new.env();
+if (!exists('parallelize_env')) parallelize_env <- new.env();
 
 # force_rerun instructs backends to ignore state-retaining files and re-run all computations
 parallelize_initialize = Lapply_initialize = function(Lapply_config = Lapply_config_default,
@@ -754,6 +754,8 @@ tempcodefile = function(fcts) {
 			code
 		}), sep = "\n");
 	codeFile = tempfile();
+	# windows specific code
+	codeFile = gsub('([\\])', '/', codeFile);
 	writeFile(codeFile, code);
 	codeFile
 }

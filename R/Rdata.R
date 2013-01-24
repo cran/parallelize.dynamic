@@ -128,6 +128,11 @@ r.output.to.vector.numeric = function(s) {
 }
 readFile = function(path) { join(scan(path, what = "raw", sep = "\n", quiet = T), sep = "\n") };
 
+Which.max = function(l) {
+	if (all(!l)) return(NA);
+	r = which.max(l);
+	r
+}
 # capturesN: named captures; for each name in captureN put the captured value assuming names to be ordered
 # captures: fetch only first capture per match <!> deprecated
 # capturesAll: fetch all caputers for each match
@@ -137,6 +142,7 @@ fetchRegexpr = function(re, str, ..., ret.all = F, globally = T, captures = F, c
 	r = if (globally)
 		gregexpr(re, str, perl = T, ...)[[1]] else
 		regexpr(re, str, perl = T, ...);
+	if (all(r < 0)) return(NULL);
 	l = sapply(1:length(r), function(i)substr(str, r[i], r[i] + attr(r, "match.length")[i] - 1));
 	if (captures) {
 		l = sapply(l, function(e)gsub(re, '\\1', e, perl = T, fixed = F));
@@ -160,8 +166,10 @@ fetchRegexpr = function(re, str, ..., ret.all = F, globally = T, captures = F, c
 			cs
 		});
 		# trim list
-		maxEls = maxCaptures - min(sapply(l, function(e)which.max(rev(e != '')))) + 1;
-		l = lapply(l, function(e)e[1:maxEls]);
+		maxEls = maxCaptures - min(
+			c(maxCaptures + 1, sapply(l, function(e)Which.max(rev(e != ''))))
+		, na.rm = T) + 1;
+		l = lapply(l, function(e)(if (maxEls > 0) e[1:maxEls] else NULL));
 	}
 	if (!ret.all) l = l[l != ""];
 	l
@@ -425,6 +433,8 @@ list.kprw = function(l, keys, unlist.pats, template, null2na, carryNames) {
 	# <p> extract key
 	r = if (key != "*") {
 		if (is.list(l)) {
+			index = fetchRegexpr("\\A\\[\\[(\\d+)\\]\\]\\Z", key, captures = T);
+			if (length(index) > 0) key = as.integer(index[[1]]);
 			r = if (is.null(l[[key]])) { if (null2na) NA else NULL } else l[[key]];
 			if (length(keys) > 1)
 				list.kprw(r, keys[-1], unlist.pats[-1], template, null2na, carryNames) else r;
